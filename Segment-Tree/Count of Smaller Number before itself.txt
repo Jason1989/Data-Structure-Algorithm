@@ -1,0 +1,86 @@
+Question: Give you an integer array (index from 0 to n-1, where n is the size of this array, value from 0 to 10000) . 
+For each element Ai in the array, count the number of element before this element Ai is smaller than it and return count number array.
+
+Example
+For array [1,2,7,8,5], return [0,1,2,3,2]
+
+public class Solution {
+   /**
+     * @param A: An integer array
+     * @return: Count the number of element before this element 'ai' is 
+     *          smaller than it and return count number array
+     */ 
+    public ArrayList<Integer> countOfSmallerNumberII(int[] A) {
+        ArrayList<Integer> res = new ArrayList<>();
+        if(A == null || A.length == 0) return res;
+        int max = 0;
+        int min = Integer.MAX_VALUE;
+        for(int num : A){
+            if(num > max) max = num;
+            if(num < min) min = num;
+        }
+        SegmentTree root = build(min, max);
+        for(int num : A){
+            modify(root, num);
+            res.add(query(root, num - 1));
+        }
+        return res;
+    }
+    
+    public SegmentTree build(int start, int end){
+        if(start == end){
+            return new SegmentTree(start, end, 0);
+        }else{
+            int mid = (start + end) / 2;
+            SegmentTree root = new SegmentTree(start, end, 0);
+            root.left = build(start, mid);
+            root.right = build(mid + 1, end);
+            return root;
+        }
+    }
+    
+    public void modify(SegmentTree root, int index){
+        if(root.start == index && root.end == index){
+            root.count++;
+        }else{
+            int mid = (root.start + root.end) / 2;
+            if(index <= mid){
+                modify(root.left, index);
+            }else{
+                modify(root.right, index); 
+            }
+            root.count = root.left.count + root.right.count;
+        }
+    }
+    
+    public int query(SegmentTree root, int index){
+        if(root.start > index) return 0;
+        if(root.start == index && root.end == index){
+            return root.count;
+        }else{
+            int mid = (root.start + root.end) / 2;
+            if(index <= mid){
+                return query(root.left, index);
+            }else{
+                return root.left.count + query(root.right, index);
+            }
+        }
+    }
+}
+
+class SegmentTree{
+    
+    int start, end, count;
+    
+    SegmentTree left, right;
+    
+    public SegmentTree(int start, int end, int count){
+        this.start = start;
+        this.end = end;
+        this.count = count;
+        int mid = (start + end) / 2;
+        left = null;
+        right = null;
+    }
+    
+}
